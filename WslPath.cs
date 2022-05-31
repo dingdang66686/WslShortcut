@@ -6,38 +6,27 @@ static class WslPath {
     const string mntPath = "/mnt/";
 
     public static bool PathToWsl(string str, int startIndex, int charCount, StringBuilder builder) {
-        // Detect absolute path
-        if(charCount < 2)
-            return false;
+        var cur = str.Substring(startIndex, charCount);
+        cur.Replace('\\', '/');
 
-        if(str[startIndex + 1] != ':')
-            return false;
-
-        var drive = str[startIndex];
-        if(!CheckDriveLetter(drive, true, true))
-            return false;
-
-        var count = charCount - 2;
-        if(count > 0) {
-            // Absolute path
-            var index = startIndex + 2;
-            var chr = str[index];
-            if(!((chr == '\\') || (chr == '/')))
-                return false;
-
-            builder.Append(mntPath);
-            builder.Append(ToLower(drive));
-
-            var len = builder.Length;
-            builder.Append(str, index, count);
-            builder.Replace('\\', '/', len, count);
-        } else {
-            // Drive only
-            builder.Append(mntPath);
-            builder.Append(ToLower(drive));
+        if (ToLower(cur[0]) < 'a' || ToLower(cur[0]) > 'z')
+        {
+            builder.Append(cur);
+            return true;
+        }
+        if (cur[1] != ':')
+        {
+            builder.Append(cur);
+            return true;
         }
 
+        builder
+            .Append(mntPath)
+            .Append(ToLower(cur[0]))
+            .Append(cur.Substring(2));
+
         return true;
+        
     }
 
     public unsafe static void ProcessOutput(IntPtr input, IntPtr output) {
